@@ -76,108 +76,156 @@ XOR не является линейно разделимой функцией. 
 ### Построить графики зависимости количества эпох от ошибки  обучения. Указать от чего зависит необходимое количество эпох обучения.
 
 У меня получились следующие результаты: https://docs.google.com/spreadsheets/d/16u5VYNN4rtL8IFkjwBF_Q1-vaZFuLSgz3QGfbrxCafE/edit?usp=sharing
-![GoogleSheetsPerceptron](https://github.com/MidoriKsai/Homework4/blob/main/GoogleSheetsPerceptron.png)
+![GoogleSheetsPerceptron](https://github.com/MidoriKsai/Homework4/blob/main/GoggleSheetsPerceptron.png)
+
+#### Необходимое количество эпох обучения зависит от сложности операции и её линейной разделимости. Простые операции, такие как OR, AND и NAND, являются линейно разделимыми, поэтому перцептрон справляется с ними достаточно быстро, требуя меньше эпох. В отличие от них, операция XOR не является линейно разделимой, и для её реализации стандартный перцептрон не подходит.
 
 ## Задание 3
-### Визуализировать данные из google-таблицы, и с помощью Python передать в проект Unity. В Python данные также должны быть визуализированы.
+### Построить визуальную модель работы перцептрона на сцене Unity.
 
-Код для вывода таблицы из GoogleSheets с помощью Python
-![PythonDP](https://github.com/MidoriKsai/Homework3/blob/main/PythonDP.png)
+Я выбрала способ визуализации - столкновение с объектом. Создала на сцене шар и платформу, при запуске и шару, и платформе задаются параметры, потом из текста берется значение и сравнивается с ранее введенными. Если получилось 1 - при столкновении платформа окрашивается в крассный, а при 0 - в зеленый
+![Ball](https://github.com/MidoriKsai/Homework4/blob/main/Ball.png)
+![Platform](https://github.com/MidoriKsai/Homework4/blob/main/Platform.png)
+![BallText](https://github.com/MidoriKsai/Homework4/blob/main/BallText.png)
+![Text](https://github.com/MidoriKsai/Homework4/blob/main/Text.png)
 
-Код для передачи данных в Unity
+Результаты для OR, в качестве примера:
+
+![FailAndSucsess](https://github.com/MidoriKsai/Homework4/blob/main/FailAndSucsess.png)
+![Fail](https://github.com/MidoriKsai/Homework4/blob/main/Fail.png)
+![Suscess](https://github.com/MidoriKsai/Homework4/blob/main/Suscess.png)
+
+Код с Перцептроном который я накидывала на платформу 
+```csharp
+using System.Collections;
+using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+
+[System.Serializable]
+public class TrainingSet
+{
+    public double[] input;
+    public double output;
+}
+
+public class ChangeColors : MonoBehaviour
+{
+    public GameObject textMeshPro;
+    public TrainingSet[] ts; 
+    private double[] weights = { 0, 0 }; 
+    private double bias = 0;
+    private double totalError = 0;
+
+    public GameObject platform;
+    public Color successColor = Color.white;
+    public Color failureColor = Color.black;
+
+    double DotProductBias(double[] v1, double[] v2)
+    {
+        double d = 0;
+        for (int x = 0; x < v1.Length; x++)
+        {
+            d += v1[x] * v2[x];
+        }
+        d += bias;
+        return d;
+    }
+
+    double CalcOutput(double[] input)
+    {
+        double dp = DotProductBias(weights, input);
+        return dp > 0 ? 1 : 0;
+    }
+
+    void InitialiseWeights()
+    {
+        for (int i = 0; i < weights.Length; i++)
+        {
+            weights[i] = Random.Range(-1.0f, 1.0f);
+        }
+        bias = Random.Range(-1.0f, 1.0f);
+    }
+
+    void UpdateWeights(int j)
+    {
+        double error = ts[j].output - CalcOutput(ts[j].input);
+        totalError += Mathf.Abs((float)error);
+        for (int i = 0; i < weights.Length; i++)
+        {
+            weights[i] = weights[i] + error * ts[j].input[i];
+        }
+        bias += error;
+    }
+    void Train(int epochs)
+    {
+        InitialiseWeights();
+        for (int e = 0; e < epochs; e++)
+        {
+            totalError = 0;
+            for (int t = 0; t < ts.Length; t++)
+            {
+                UpdateWeights(t);
+            }
+            Debug.Log("Epoch " + e + " Total Error: " + totalError);
+        }
+    }
+
+    void Start()
+    {
+        Train(1);
+    }
+
+    void OnCollisionEnter(Collision other)
+    {
+        var text = textMeshPro.GetComponent<TextMeshProUGUI>().text;
+        int thisNumber = int.Parse(text[text.Length - 1].ToString());
+        var otherNumber = other.gameObject.GetComponent<CollisionBall>().Int;
+        foreach (var str in ts)
+        {
+            if (str.input[0] == thisNumber && str.input[1] == otherNumber)
+            {
+                if (str.output == 1)
+                {
+                    gameObject.GetComponent<Renderer>().material.color = successColor;
+                }
+                else
+                {
+                    gameObject.GetComponent<Renderer>().material.color = failureColor;
+                }
+            }
+        }
+
+    }
+}
+
+```
+
+Код, который использовала для шара
 ```csharp
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.Networking;
-using Newtonsoft.Json.Linq;
 
-public class EnemyDragon : MonoBehaviour
+public class CollisionBall : MonoBehaviour
 {
-  public GameObject dragonEggPrefab;
-  public float speed = 1;
-  public float timeBetweenEggDrops = 1f;
-  public float leftRightDistance = 10f;
-  public float chanceDirection = 0.1f;
-  public int lvlNumber = 0;
+    public int Int = 11;
+    public GameObject text;
+    void Start()
+    {
+        var temp = text.GetComponent<TextMeshProUGUI>().text;
+        Int = int.Parse(temp[temp.Length - 1].ToString());
+    }
 
-  private string sheetId = "1wS8rGyOEgJLOPOv45qXWkdj3O-NInPqLVthZDWIjTtA";
-  private string apiKey = "AIzaSyA4ZArvrYjVrdmsjiLnKJJH4r25PzAYc7w";
+}
 
-  void Start()
-  {
-      StartCoroutine(GetDataFromSheet());
-      Invoke("DropEgg", 2f);
-  }
 
-  void DropEgg(){
-      Vector3 myVector = new Vector3(0.0f, 5.0f, 0.0f);
-      GameObject egg = Instantiate<GameObject>(dragonEggPrefab);
-      egg.transform.position = transform.position + myVector;
-      Invoke("DropEgg", timeBetweenEggDrops);
-  }
-
-  void Update()
-  {
-      Vector3 pos = transform.position;
-      pos.x += speed * Time.deltaTime;
-      transform.position = pos;
-
-      if (pos.x < -leftRightDistance){
-          speed = Mathf.Abs(speed);
-      }
-      else if (pos.x > leftRightDistance){
-          speed = -Mathf.Abs(speed);
-      }
-  }
-
-  private void FixedUpdate() {
-      if (Random.value < chanceDirection){
-          speed *= -1;
-      }
-  }
-
-   IEnumerator GetDataFromSheet()
-  {
-      Debug.Log("Here");
-      var charList = new List<string> {"B","C","D","E","F","G","H","I","J","K"};
-      var charToPut = charList[lvlNumber-1];
-      Debug.Log(charToPut);
-      string url = $"https://sheets.googleapis.com/v4/spreadsheets/{sheetId}/values/Лист1!{charToPut}2:{charToPut}5?key={apiKey}";
-      Debug.Log(url);
-
-      using (UnityWebRequest request = UnityWebRequest.Get(url))
-      {
-          yield return request.SendWebRequest();
-
-          if (request.result == UnityWebRequest.Result.Success)
-          {
-                              
-              JObject json = JObject.Parse(request.downloadHandler.text);
-              JArray values = (JArray)json["values"];
-              Debug.Log(values);
-
-              if (values != null && values.Count > 0)
-              {
-                  
-                  speed = float.Parse((string)values[0][0]);
-                  timeBetweenEggDrops = float.Parse((string)values[3][0]); 
-                  leftRightDistance = float.Parse((string)values[1][0]); 
-                  chanceDirection = float.Parse((string)values[2][0]); 
-              }
-          }
-          else
-          {
-              Debug.LogError($"Error fetching data: {request.error}");
-          }
-      }
-   }
-} 
 ```
 
 ## Выводы
 
-Работа над балансировкой параметров игры в Dragon Picker показала, как ключевые переменные, такие как скорость движения, вероятность смены направления и частота падения предметов, напрямую влияют на игровой процесс. Эти параметры задают темп и сложность игры, и их корректная настройка позволяет создавать постепенно усложняющийся игровой опыт.
+Лабораторная работа продемонстрировала базовые принципы работы перцептрона и его способность обучаться на линейно разделимых данных. Для более сложных задач (например, XOR) требуется использование другого подхода. Практическая реализация и визуализация в Unity укрепили понимание основ машинного обучения и работы перцептрона.
 
 | Plugin | README |
 | ------ | ------ |
