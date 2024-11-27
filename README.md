@@ -47,25 +47,36 @@ XOR | дать комментарии о корректности работы
 - OR | дать комментарии о корректности работы
 
 Для начала создадим проект, в котором будет GameObject на который мы накинем скрипт перцептрона и где будем менять значения 
-![UnityPerceptron](https://github.com/MidoriKsai/Homework3/blob/main/UnityPerceptron.png)
+![UnityPerceptron](https://github.com/MidoriKsai/Homework4/blob/main/PerceptronUnity.png)
 
-Для OR понадобилось примерно 4 эпохи, чтобы исправить ошибки 
-![OR](https://github.com/MidoriKsai/Homework3/blob/main/OR.png)
+Я везде брала 10 эпох, что много, можно было остановиться на 6-7 эпохах.
 
-Для AND понадобилось примерно 6 эпох, чтобы исправить ошибки 
-![OR](https://github.com/MidoriKsai/Homework3/blob/main/OR.png)
+Для OR понадобилось примерно 4 эпохи, чтобы исправить ошибки. 
+![OR](https://github.com/MidoriKsai/Homework4/blob/main/OR.png)
+
 
 - AND | дать комментарии о корректности работы
+  
+Для AND понадобилось примерно 6 эпох, чтобы исправить ошибки.
+![AND](https://github.com/MidoriKsai/Homework4/blob/main/AND.png)
+
+
 - NAND | дать комментарии о корректности работы
+
+Для NAND понадобилось примерно 4 эпохи, чтобы исправить ошибки.
+![NAND](https://github.com/MidoriKsai/Homework4/blob/main/NAND.png)
+
 - XOR | дать комментарии о корректности работы
 
+XOR не является линейно разделимой функцией. Перцептрон не смог корректно обучиться и выполнить эту операцию, что можно продемонстрировать в Unity. Первые значения TotalError варьируются, но после 3-4 эпох становятся равны 4 и уже не меняются.
+![XOR](https://github.com/MidoriKsai/Homework4/blob/main/XOR.png)
 
 
 ## Задание 2
-### Создать 10 сцен на Unity с изменяющимся уровнем сложности.
+### Построить графики зависимости количества эпох от ошибки  обучения. Указать от чего зависит необходимое количество эпох обучения.
 
-Нам нужно было создать 10 сцен и изменить там параметры EnemyDragon в инспекторе, что я и сделала.
-![UnityDP(scene)](https://github.com/MidoriKsai/Homework3/blob/main/UnityDP(scene).png)
+У меня получились следующие результаты: https://docs.google.com/spreadsheets/d/16u5VYNN4rtL8IFkjwBF_Q1-vaZFuLSgz3QGfbrxCafE/edit?usp=sharing
+![GoogleSheetsPerceptron](https://github.com/MidoriKsai/Homework4/blob/main/GoogleSheetsPerceptron.png)
 
 ## Задание 3
 ### Визуализировать данные из google-таблицы, и с помощью Python передать в проект Unity. В Python данные также должны быть визуализированы.
